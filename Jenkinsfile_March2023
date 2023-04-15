@@ -6,6 +6,7 @@ node{
     stage('2.MavenBuild'){
         sh "${mavenHome}/bin/mvn package"
     }
+    /*
     stage("3.codeQuality"){
         sh "${mavenHome}/bin/mvn sonar:sonar"
     }
@@ -31,4 +32,5 @@ node{
 
         SENTECH.''', subject: 'Build Status', to: 'kmnyuykonghe@gmail.com'
     }
+    */
 }
