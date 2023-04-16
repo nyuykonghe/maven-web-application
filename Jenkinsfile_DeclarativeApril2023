@@ -1,0 +1,56 @@
+pipeline{
+    agent{
+        label 'master'
+    }
+    tools{
+        maven 'maven3.9.1'
+    }
+    //options{}
+    //triggers{}
+    stages{
+        stage('1.Clone'){
+            steps{
+                sh "echo 'cloning the latest application version'"
+                git "https://github.com/nyuykonghe/maven-web-application"
+                sh "echo 'latest application version available for testing and build'"
+            }
+        }
+        stage('2.TestBuild'){
+            steps{
+                sh "echo 'running Junit-test-cases'"
+                sh "echo 'testing must be passed to create artifacts'"
+            }
+        }
+        stage('3.CodeQualityAnalysis'){
+            steps{
+                sh "echo 'setup sonarQube authentication'"
+                sh "echo 'Performing CodeQualityAnalysis'"
+                sh "mvn sonar:sonar"
+            }
+        }
+        stage('4.UploadArtifacts'){
+            steps{
+                sh "echo 'Configure nexus authentication'"
+                sh "mvn deploy"
+            }
+        }
+        stage('5.Deploy'){
+            steps{
+                deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'https://172.31.26.25:8080')], contextPath: null, war: 'target/*war'
+            }
+        }
+    }
+    post{
+        always{
+           emailext body: 'The Build was successful', recipientProviders: [developers()], subject: 'Build Success', to: 'kmnyuykonghe@gmail.com' 
+        }
+        success{
+            emailext body: 'The Build was successful', recipientProviders: [developers()], subject: 'Build Success', to: 'kmnyuykonghe@gmail.com'
+        }
+        failure{
+            emailext body: '''Please Review this job
+
+            Sentech''', recipientProviders: [developers()], subject: 'Build Failed', to: 'kmnyuykonghe@gmail.com'
+        }
+    }
+}
